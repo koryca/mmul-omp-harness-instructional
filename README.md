@@ -73,36 +73,6 @@ This version of benchmark.cpp is modified to accept two command line arguments:
 This change was made to make it possible to control these parameters from the command
 line, which is handy for scripting up the test suite.
 
-# Changes to benchmark.cpp from HW2
-
-This version of benchmark.cpp is modified to accept two command line arguments:
-
-* -N nn   # sets the problem size  
-* -B bb   # sets the block size
-
-This change was made to make it possible to control these parameters from the command
-line, which is handy for scripting up the test suite.
-
-# Changes to benchmark.cpp from HW2
-
-This version of benchmark.cpp is modified to accept two command line arguments:
-
-* -N nn   # sets the problem size  
-* -B bb   # sets the block size
-
-This change was made to make it possible to control these parameters from the command
-line, which is handy for scripting up the test suite.
-
-# Changes to benchmark.cpp from HW2
-
-This version of benchmark.cpp is modified to accept two command line arguments:
-
-* -N nn   # sets the problem size  
-* -B bb   # sets the block size
-
-This change was made to make it possible to control these parameters from the command
-line, which is handy for scripting up the test suite.
-
 # Running the benchmarks
 
 When you run cmake, it generates three bash script files that you may use on Cori to
