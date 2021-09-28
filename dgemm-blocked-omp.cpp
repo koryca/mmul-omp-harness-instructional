@@ -30,7 +30,7 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
    double * Blocal = (double*) malloc(block_size * block_size * sizeof(double));
    double * Clocal = (double*) malloc(block_size * block_size * sizeof(double));
 
-   #pragma omp parallel for 
+   #pragma omp parallel  
    {
       LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
       for (int i = 0; i < nblocks; i++){
@@ -77,7 +77,7 @@ void copy_from_block(double *src_block, int n, int ioffset, int joffset, double 
 
 void square_dgemm(int n, double* A, double* B, double* C) 
 {
-   #pragma omp parallel for 
+   #pragma omp parallel  
    {
       for (int i=0; i<n; i++){
          for (int j=0; j<n; j++){
