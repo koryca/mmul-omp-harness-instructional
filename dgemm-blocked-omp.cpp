@@ -78,18 +78,13 @@ void copy_from_block(double *src_block, int n, int ioffset, int joffset, double 
 
 void square_dgemm(int n, double* A, double* B, double* C) 
 {
-   #pragma omp parallel  
-   {
-      #pragma omp for
-      for (int i=0; i<n; i++){
-         for (int j=0; j<n; j++){
-            double temp = C[i + j * n];
-            for(int k=0; k<n; k++){
-               // C[i,j] += A[i,k] * B[k,j]
-               temp += A[i + k * n] * B[k + j * n];
-            }
-            C[i + j * n] = temp;
+   for (int i=0; i<n; i++){
+      for (int j=0; j<n; j++){
+         double temp = C[i + j * n];
+         for(int k=0; k<n; k++){
+            // C[i,j] += A[i,k] * B[k,j]
+            temp += A[i + k * n] * B[k + j * n];
          }
+         C[i + j * n] = temp;
       }
-   }
 }
