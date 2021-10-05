@@ -45,15 +45,15 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
                copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
                
                // square_dgemm(block_size, Alocal, Blocal, Clocal);
-               for (int ii=0; i<block_size; ii++){
+               for (int ii=0; ii<block_size; ii++){
                   for (int jj=0; jj<block_size; jj++){
-                     double temp = Clocal[i + j * n];
+                     double temp = Clocal[ii + jj * block_size];
                      for(int kk=0; kk<block_size; kk++){
                         // C[i,j] += A[i,k] * B[k,j]
-                        temp += Alocal[i + k * n] * Blocal[k + j * n];
+                        temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
                      }
                      // #pragma omp critical
-                     Clocal[i + j * n] = temp;
+                     Clocal[ii + jj * block_size] = temp;
                   }
                }
             
