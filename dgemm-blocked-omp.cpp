@@ -58,7 +58,6 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
          
             // copy from Clocal back to  C[i*bs, j*bs]
             copy_from_block(Clocal, n, i * block_size, j * block_size, C, block_size);
-            }
          }
       }
    }
