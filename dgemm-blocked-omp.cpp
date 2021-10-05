@@ -10,7 +10,7 @@ const char* dgemm_desc = "Blocked dgemm, OpenMP-enabled";
 
 void copy_to_block(double *, int, int, int, double *, int);
 void copy_from_block(double *, int, int, int, double *, int);
-// void square_dgemm(int, double*, double*, double*);
+void square_dgemm(int, double*, double*, double*);
 
 /* This routine performs a dgemm operation
  *  C := C + A * B
