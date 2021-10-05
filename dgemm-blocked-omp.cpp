@@ -10,7 +10,6 @@ const char* dgemm_desc = "Blocked dgemm, OpenMP-enabled";
 
 void copy_to_block(double *, int, int, int, double *, int);
 void copy_from_block(double *, int, int, int, double *, int);
-// void square_dgemm(int, double*, double*, double*);
 
 /* This routine performs a dgemm operation
  *  C := C + A * B
@@ -30,28 +29,25 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
    double * Blocal = (double*) malloc(block_size * block_size * sizeof(double));
    double * Clocal = (double*) malloc(block_size * block_size * sizeof(double));
 
-   int i = 0, j = 0, k = 0;
-
    #pragma omp parallel
    {
       LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
-      #pragma omp for collapse(2) private(i,j)
-      for (i = 0; i < nblocks; i++){
-         for (j = 0; j < nblocks; j++){ 
+      #pragma omp for collapse(2)
+      for (int i = 0; i < nblocks; i++){
+         for (int j = 0; j < nblocks; j++){ 
             //copy from C[i*bs, j*bs] into Clocal
             copy_to_block(C, n, i * block_size, j * block_size, Clocal, block_size);
-            for(k = 0; k < nblocks; k++){ 
+            for(int k = 0; k < nblocks; k++){ 
                //copy from A[i*bs, k*bs] into Alocal
                copy_to_block(A, n, i * block_size, k * block_size, Alocal, block_size);
                //copy from B[k*bs, j*bs] into Blocal
                copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
                
-               // square_dgemm(block_size, Alocal, Blocal, Clocal);
                // #pragma omp parallel for collapse(2)
-               for (int ii=0; ii<block_size; ii++){
-                  for (int jj=0; jj<block_size; jj++){
+               for (int ii = 0; ii < block_size; ii++){
+                  for (int jj = 0; jj < block_size; jj++){
                      double temp = Clocal[ii + jj * block_size];
-                     for(int kk=0; kk<block_size; kk++){
+                     for(int kk = 0; kk < block_size; kk++){
                         // C[i,j] += A[i,k] * B[k,j]
                         temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
                      }
@@ -59,7 +55,6 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
                      Clocal[ii + jj * block_size] = temp;
                   }
                }
-            
                // copy from Clocal back to  C[i*bs, j*bs]
                copy_from_block(Clocal, n, i * block_size, j * block_size, C, block_size);
             }
@@ -88,21 +83,3 @@ void copy_from_block(double *src_block, int n, int ioffset, int joffset, double 
     for (int i = 0; i < block_size; i++, src_offset += block_size, dst_offset += n)
          memcpy(dst_matrix + dst_offset, src_block + src_offset, sizeof(double)*block_size);
 }
-
-// copy from dgemm-basic
-
-// void square_dgemm(int n, double* A, double* B, double* C) 
-// {
-//    #pragma omp parallel for
-//    for (int i=0; i<n; i++){
-//       for (int j=0; j<n; j++){
-//          double temp = C[i + j * n];
-//          for(int k=0; k<n; k++){
-//             // C[i,j] += A[i,k] * B[k,j]
-//             temp += A[i + k * n] * B[k + j * n];
-//          }
-//          #pragma omp critical
-//          C[i + j * n] = temp;
-//       }
-//    }
-// }
