@@ -32,10 +32,10 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
 
    int i = 0, j = 0, k = 0;
 
-   // #pragma omp parallel
-   // {
+   #pragma omp parallel
+   {
       LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
-      // #pragma omp parallel for collapse(2) private(i,j)
+      #pragma omp for collapse(2) private(i,j)
       for (i = 0; i < nblocks; i++){
          for (j = 0; j < nblocks; j++){ 
             //copy from C[i*bs, j*bs] into Clocal
@@ -47,7 +47,7 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
                copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
                
                // square_dgemm(block_size, Alocal, Blocal, Clocal);
-               #pragma omp parallel for collapse(2)
+               // #pragma omp parallel for collapse(2)
                for (int ii=0; ii<block_size; ii++){
                   for (int jj=0; jj<block_size; jj++){
                      double temp = Clocal[ii + jj * block_size];
@@ -55,7 +55,7 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
                         // C[i,j] += A[i,k] * B[k,j]
                         temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
                      }
-                     #pragma omp critical
+                     // #pragma omp critical
                      Clocal[ii + jj * block_size] = temp;
                   }
                }
@@ -66,7 +66,7 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
          }
       }
       LIKWID_MARKER_STOP(MY_MARKER_REGION_NAME);
-   // }
+   }
 
    free(Alocal);
    free(Blocal);
