@@ -38,6 +38,7 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
       for (int j = 0; j < nblocks; j++){ 
          //copy from C[i*bs, j*bs] into Clocal
          copy_to_block(C, n, i * block_size, j * block_size, Clocal, block_size);
+         #pragma omp parallel for
          for(int k = 0; k < nblocks; k++){ 
             //copy from A[i*bs, k*bs] into Alocal
             copy_to_block(A, n, i * block_size, k * block_size, Alocal, block_size);
@@ -45,7 +46,6 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
             copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
             
             // square_dgemm(block_size, Alocal, Blocal, Clocal);
-            #pragma omp parallel for
             for (int ii=0; ii<block_size; ii++){
                for (int jj=0; jj<block_size; jj++){
                   double temp = Clocal[ii + jj * block_size];
