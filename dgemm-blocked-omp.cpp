@@ -10,7 +10,7 @@ const char* dgemm_desc = "Blocked dgemm, OpenMP-enabled";
 
 void copy_to_block(double *, int, int, int, double *, int);
 void copy_from_block(double *, int, int, int, double *, int);
-// void square_dgemm(int, double*, double*, double*);
+void square_dgemm(int, double*, double*, double*);
 
 /* This routine performs a dgemm operation
  *  C := C + A * B
@@ -30,10 +30,10 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
    double * Blocal = (double*) malloc(block_size * block_size * sizeof(double));
    double * Clocal = (double*) malloc(block_size * block_size * sizeof(double));
 
-   #pragma omp parallel
-   {
+   // #pragma omp parallel
+   // {
       LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
-      #pragma omp for 
+      // #pragma omp for 
       for (int i = 0; i < nblocks; i++){
          for (int j = 0; j < nblocks; j++){ 
             //copy from C[i*bs, j*bs] into Clocal
@@ -44,19 +44,19 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
                //copy from B[k*bs, j*bs] into Blocal
                copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
                
-               // square_dgemm(block_size, Alocal, Blocal, Clocal);
+               square_dgemm(block_size, Alocal, Blocal, Clocal);
                // #pragma omp parallel for
-               for (int ii=0; ii<block_size; ii++){
-                  for (int jj=0; jj<block_size; jj++){
-                     double temp = Clocal[ii + jj * block_size];
-                     for(int kk=0; kk<block_size; kk++){
-                        // C[i,j] += A[i,k] * B[k,j]
-                        temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
-                     }
-                     // #pragma omp critical
-                     Clocal[ii + jj * block_size] = temp;
-                  }
-               }
+               // for (int ii=0; ii<block_size; ii++){
+               //    for (int jj=0; jj<block_size; jj++){
+               //       double temp = Clocal[ii + jj * block_size];
+               //       for(int kk=0; kk<block_size; kk++){
+               //          // C[i,j] += A[i,k] * B[k,j]
+               //          temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
+               //       }
+               //       // #pragma omp critical
+               //       Clocal[ii + jj * block_size] = temp;
+               //    }
+               // }
             
                // copy from Clocal back to  C[i*bs, j*bs]
                copy_from_block(Clocal, n, i * block_size, j * block_size, C, block_size);
@@ -64,11 +64,11 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
          }
       }
       LIKWID_MARKER_STOP(MY_MARKER_REGION_NAME);
-   }
+   // }
 
-   // free(Alocal);
-   // free(Blocal);
-   // free(Clocal);
+   free(Alocal);
+   free(Blocal);
+   free(Clocal);
 }
 
 void copy_to_block(double *src_matrix, int n, int ioffset, int joffset, double *dst_block, int block_size)
@@ -89,18 +89,18 @@ void copy_from_block(double *src_block, int n, int ioffset, int joffset, double 
 
 // copy from dgemm-basic
 
-// void square_dgemm(int n, double* A, double* B, double* C) 
-// {
-//    // #pragma omp parallel for
-//    for (int i=0; i<n; i++){
-//       for (int j=0; j<n; j++){
-//          double temp = C[i + j * n];
-//          for(int k=0; k<n; k++){
-//             // C[i,j] += A[i,k] * B[k,j]
-//             temp += A[i + k * n] * B[k + j * n];
-//          }
-//          // #pragma omp critical
-//          C[i + j * n] = temp;
-//       }
-//    }
-// }
+void square_dgemm(int n, double* A, double* B, double* C) 
+{
+   #pragma omp parallel for
+   for (int i=0; i<n; i++){
+      for (int j=0; j<n; j++){
+         double temp = C[i + j * n];
+         for(int k=0; k<n; k++){
+            // C[i,j] += A[i,k] * B[k,j]
+            temp += A[i + k * n] * B[k + j * n];
+         }
+         #pragma omp critical
+         C[i + j * n] = temp;
+      }
+   }
+}
