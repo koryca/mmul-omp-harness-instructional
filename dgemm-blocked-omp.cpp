@@ -84,6 +84,7 @@ void square_dgemm(int n, double* A, double* B, double* C)
             // C[i,j] += A[i,k] * B[k,j]
             temp += A[i + k * n] * B[k + j * n];
          }
+         #pragma omp critical
          C[i + j * n] = temp;
       }
    }
