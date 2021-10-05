@@ -30,30 +30,32 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
    double * Blocal = (double*) malloc(block_size * block_size * sizeof(double));
    double * Clocal = (double*) malloc(block_size * block_size * sizeof(double));
 
-   #pragma omp parallel for collapse(2)
-   LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
-   for (int i = 0; i < nblocks; i++){
-      for (int j = 0; j < nblocks; j++){ 
-         //copy from C[i*bs, j*bs] into Clocal
-         copy_to_block(C, n, i * block_size, j * block_size, Clocal, block_size);
-         for(int k = 0; k < nblocks; k++){ 
-            //copy from A[i*bs, k*bs] into Alocal
-            copy_to_block(A, n, i * block_size, k * block_size, Alocal, block_size);
-            //copy from B[k*bs, j*bs] into Blocal
-            copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
+   #pragma omp parallel {
+      LIKWID_MARKER_START(MY_MARKER_REGION_NAME);
+      #pragma omp for collapse(2)
+      for (int i = 0; i < nblocks; i++){
+         for (int j = 0; j < nblocks; j++){ 
+            //copy from C[i*bs, j*bs] into Clocal
+            copy_to_block(C, n, i * block_size, j * block_size, Clocal, block_size);
+            for(int k = 0; k < nblocks; k++){ 
+               //copy from A[i*bs, k*bs] into Alocal
+               copy_to_block(A, n, i * block_size, k * block_size, Alocal, block_size);
+               //copy from B[k*bs, j*bs] into Blocal
+               copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
+               
+               square_dgemm(block_size, Alocal, Blocal, Clocal);
             
-            square_dgemm(block_size, Alocal, Blocal, Clocal);
-         
-            // copy from Clocal back to  C[i*bs, j*bs]
-            copy_from_block(Clocal, n, i * block_size, j * block_size, C, block_size);
+               // copy from Clocal back to  C[i*bs, j*bs]
+               copy_from_block(Clocal, n, i * block_size, j * block_size, C, block_size);
+            }
          }
       }
+      LIKWID_MARKER_STOP(MY_MARKER_REGION_NAME);
    }
-   LIKWID_MARKER_STOP(MY_MARKER_REGION_NAME);
 
-   free(Alocal);
-   free(Blocal);
-   free(Clocal);
+   // free(Alocal);
+   // free(Blocal);
+   // free(Clocal);
 }
 
 void copy_to_block(double *src_matrix, int n, int ioffset, int joffset, double *dst_block, int block_size)
