@@ -45,16 +45,16 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
             //copy from B[k*bs, j*bs] into Blocal
             copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
             
-            // square_dgemm(block_size, Alocal, Blocal, Clocal);
-            for (int ii=0; ii<block_size; ii++){
-               for (int jj=0; jj<block_size; jj++){
-                  double temp = Clocal[ii + jj * block_size];
-                  for(int kk=0; kk<block_size; kk++){
-                     // C[i,j] += A[i,k] * B[k,j]
-                     temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
-                  }
-                  Clocal[ii + jj * block_size] = temp;
-               }
+            square_dgemm(block_size, Alocal, Blocal, Clocal);
+            // for (int ii=0; ii<block_size; ii++){
+            //    for (int jj=0; jj<block_size; jj++){
+            //       double temp = Clocal[ii + jj * block_size];
+            //       for(int kk=0; kk<block_size; kk++){
+            //          // C[i,j] += A[i,k] * B[k,j]
+            //          temp += Alocal[ii + kk * block_size] * Blocal[kk + jj * block_size];
+            //       }
+            //       Clocal[ii + jj * block_size] = temp;
+            //    }
          
             // copy from Clocal back to  C[i*bs, j*bs]
             copy_from_block(Clocal, n, i * block_size, j * block_size, C, block_size);
@@ -87,16 +87,16 @@ void copy_from_block(double *src_block, int n, int ioffset, int joffset, double 
 
 // copy from dgemm-basic
 
-// void square_dgemm(int n, double* A, double* B, double* C) 
-// {
-//    #pragma omp parallel for
-//    for (int i=0; i<n; i++){
-//       for (int j=0; j<n; j++){
-//          double temp = C[i + j * n];
-//          for(int k=0; k<n; k++){
-//             // C[i,j] += A[i,k] * B[k,j]
-//             temp += A[i + k * n] * B[k + j * n];
-//          }
-//          C[i + j * n] = temp;
-//       }
-// }
+void square_dgemm(int n, double* A, double* B, double* C) 
+{
+   // #pragma omp parallel for
+   for (int i=0; i<n; i++){
+      for (int j=0; j<n; j++){
+         double temp = C[i + j * n];
+         for(int k=0; k<n; k++){
+            // C[i,j] += A[i,k] * B[k,j]
+            temp += A[i + k * n] * B[k + j * n];
+         }
+         C[i + j * n] = temp;
+      }
+}
