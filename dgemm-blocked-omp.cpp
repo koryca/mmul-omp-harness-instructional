@@ -43,7 +43,7 @@ void square_dgemm_blocked(int n, int block_size, double* A, double* B, double* C
                //copy from B[k*bs, j*bs] into Blocal
                copy_to_block(B, n, k * block_size, j * block_size, Blocal, block_size);
                
-               // #pragma omp parallel for collapse(2)
+               // #pragma omp parallel for 
                for (int ii = 0; ii < block_size; ii++){
                   for (int jj = 0; jj < block_size; jj++){
                      double temp = Clocal[ii + jj * block_size];
